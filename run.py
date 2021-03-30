@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import QApplication
 import sys
 import multiprocessing as mp
 from utils.data_streams import DataStreams
-from time import sleep
 from utils.working_funcs import (
     initialize_dicts,
     prepare_workspace,
@@ -20,7 +19,6 @@ def processing_func(label_dict, controller_dict):
     else:
         data_streams.process_static_data()
     
-    sleep(2)
     controller_dict['app_initialized'] = False
     controller_dict['app_running'] = False
 

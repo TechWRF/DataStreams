@@ -27,11 +27,27 @@ class DataStreams(object):
         
         if self.controller_dict['local_test'] is False and append_log:
             self.controller_dict['log_text'] += '%s\n' %text
+    
+    def log_result(self, start_time):
+        duration = time() - start_time
+        if duration <= 60:
+            time_unit = 'secs'
+        elif duration > 60:
+            duration /= 60
+            time_unit = 'mins'
+        else:
+            duration /= 3600
+            time_unit = 'hrs'
         
+        self.log('Successfully Processed!\nDuration: %.2f %s' %(duration, time_unit))
+        self.log('Result:\n%s' %self.label_dict, append_log=False)
+        if self.controller_dict['local_test']:
+            print(self.label_dict)
+            
     @staticmethod    
     def output_to_dict(output, start_idx=0):
         """
-        Converts Batch of Entries from Horizontal to Vertical Python Dictionary
+        Converts batch of entries from horizontal to vertical Python dictionary
         from:
             {"time":"2019-05-14 12:05:52","ip":"10.0.191.219","status_code":303}
         to:
@@ -56,10 +72,10 @@ class DataStreams(object):
 
     def process_data(self, entry_dict):
         """
-        Batch of Entries are Filtered According to Criteria:
+        Batch of entries are filtered according to criteria:
             1) Error Code 5xx;
             2) Only Weekdays.
-        And Only Unique Entries Are Kept Using drop_duplicates()
+        And only unique entries are kept using drop_duplicates()
         self.label_dict is Error Counter
         """
         
@@ -83,45 +99,29 @@ class DataStreams(object):
     def read_output(self):
         with open(self.controller_dict['json_f_path'], 'r') as f:
             entry_dict = json.load(f)
-        return entry_dict        
-    
-    def finalize_static_processing(self, entry_dict):
-        self.process_data(entry_dict)
-        
-        if self.controller_dict['local_test']:
-            print(self.label_dict)
-                    
-        duration = time() - self.start_time
-        if duration <= 60:
-            time_unit = 'secs'
-        elif duration > 60:
-            duration /= 60
-            time_unit = 'mins'
-        else:
-            duration /= 3600
-            time_unit = 'hrs'
-        
-        self.log('Successfully Processed!\nDuration: %.2f %s' %(duration, time_unit))
-        self.log('Result:\n%s' %self.label_dict, append_log=False)
+        return entry_dict
         
     def process_static_data(self):
         """
-        Along With finalize_static_processing() Processes Data as Static and 
+        Along with finalize_static_processing() processes data as static and 
         Saves the Result as JSON.
         """
         
-        self.start_time = time()
+        start_time = time()
         self.log('Running Script "%s" and Saving Result' %self.controller_dict['script_name'])
+        
+        # Reads old output to save time.
         if os.path.isfile(self.controller_dict['json_f_path']):
             try:
                 self.log('Script "%s" Already Executed Before, Skipping to Processing' %self.controller_dict['script_name'])
                 entry_dict = self.read_output()
-                self.finalize_static_processing(entry_dict)
+                self.process_data(entry_dict)
+                self.log_result()
                 return
             except:
                 self.log('Could Not Read Saved JSON Data, Running Script')
 
-        # Script is Ran using Python Subprocessing
+        # If no old output, script is ran using Python subprocessing.
         p = subprocess_func(self.controller_dict)
         
         stdout, stderr = p.communicate()
@@ -129,17 +129,18 @@ class DataStreams(object):
         if len(stderr): 
             raise RuntimeError('Error When Executing:\n%s' %stderr)
         
-        # After Subprocessed is Finished, Data is Processed
+        # Stream is processed with output_to_dict() and process_data() as single batch.
         stdout = stdout.decode().rstrip().split('\n')
         entry_dict = self.output_to_dict(stdout)
         self.write_output(entry_dict)
         
-        self.finalize_static_processing(entry_dict)
+        self.process_data(entry_dict)
+        self.log_result(start_time)
                 
     def wait_for_process_startup(self):
         """
-        Waits Until First Entries from Stream are Saved in .txt File Under 'streams'.
-        Waits Until GUI is Loaded on Screen.
+        Waits until first entries from stream are saved in .txt file under 'streams'.
+        Then, waits until gui is loaded on screen.
         """
         
         self.log('Waiting for Streaming to Start')
@@ -160,16 +161,16 @@ class DataStreams(object):
             
     def process_stream_data(self):
         """
-        Reads Data from .txt Under 'streams' and Sends Batches to 
-        Processing Functions output_to_dict() and process_data().
-        Only New Data is Processed to Avoid Duplicates Using Updating
-        .txt Row Index 'start_idx'.
+        Reads data from .txt under 'streams' and sends batches to 
+        processing functions output_to_dict() and process_data().
+        Only new data is processed using updating .txt row index 'start_idx'.
+        'streaming_stopped' stops processing when streaming is stopped.
         """
-        
+        func_start_time = time()
         self.wait_for_process_startup()
         
         start_idx, last_loop = 0, False
-        while self.controller_dict['streaming_stopped'] is False:        
+        while True:       
             self.start_time = time()
             with open(self.controller_dict['stream_f_path']) as f: 
                 streamed_data = f.read().rstrip().split('\n')
@@ -178,7 +179,8 @@ class DataStreams(object):
             start_idx += len(entry_dict['ip'])
             
             if self.controller_dict['local_test']:
-                print(start_idx)
+                print('N of Entries Processed: %d\nN of Errors: %d\n' \
+                      %(start_idx + 1, sum(list(self.label_dict.values()))))
             
             self.process_data(entry_dict)
     
@@ -188,17 +190,26 @@ class DataStreams(object):
                 break
             elif self.controller_dict['streaming_stopped'] and last_loop is False:
                 last_loop = True
+                
+        self.log_result(func_start_time)
                                 
     def do_sleep(self):
         sleep(max([0, self.controller_dict['sleep_time'] - (time() - self.start_time)]))
         
 if __name__ == '__main__':
+    """
+    Test run DataStreams module same way as in 'run.py' except processing functions
+    process_stream_data() and process_static_data() are not multiprocessed.
+    Helpful for developers!
+    """
+    
     mngr = mp.Manager()
     label_dict, controller_dict = initialize_dicts(mngr)
     controller_dict = read_config(controller_dict)
     controller_dict = prepare_workspace(controller_dict)
     
     controller_dict['local_test'] = True
+    controller_dict['app_running'] = True
         
     data_streams = DataStreams(label_dict, controller_dict)
     

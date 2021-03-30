@@ -2,7 +2,7 @@ import os
 import configparser
 import argparse
 import subprocess
-from time import sleep
+import platform
 
 def get_cwd():
     py_path = os.path.realpath(__file__)
@@ -15,8 +15,8 @@ def get_cwd():
 
 def prepare_workspace(controller_dict):
     """
-    Inspects Legitimacy of Working Directory and Creates Directories for
-    Streams, Logs, JSONs Containing Results Incase of Static Processing.
+    Inspects legitimacy of working directory and creates directories for streams, logs and
+    jsons containing results incase of static processing.
     """
     
     cwd = get_cwd()
@@ -58,7 +58,9 @@ def prepare_workspace(controller_dict):
 def initialize_dicts(mngr):
     """
     label_dict is Error Counter
-    controller_dict is Placeholder for Paths, Bools and Log Text. 
+    controller_dict is Placeholder for paths, bools and log text.
+    'app_initialized' is used to stop streaming process when app is stopped.
+    'app_running' is used to wait until gui is displayed and to do logging
     """
     
     label_dict = mngr.dict()
@@ -88,16 +90,23 @@ def read_config(controller_dict):
     run_mode = get_run_mode()
     controller_dict['script_name'] = config[run_mode]['script_name']
     controller_dict['stream'] = config.getboolean(run_mode, 'stream')
-    controller_dict['sleep_time'] = float(config[run_mode]['sleep_time'])
+    controller_dict['sleep_time'] = min([max([1, float(config[run_mode]['sleep_time'])]), 30])
     return controller_dict
 
 def subprocess_func(controller_dict):
     """
-    Starts Subprocess for Static or Stream Processing.
+    Starts subprocess for static or stream processing.
     """
     
-    p = subprocess.Popen(['bash', '%s.sh' %controller_dict['script_name']],
-                        shell=True, 
+    my_os = platform.system()
+    if my_os == 'Windows':
+        cmd = ['bash', '%s.sh' %controller_dict['script_name']]
+    elif my_os == 'Linux':
+        cmd = './%s.sh' %controller_dict['script_name']
+    else:
+        raise RuntimeError('Please Do Not Use %s Today' %my_os)
+        
+    p = subprocess.Popen(cmd, shell=True, 
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         cwd=os.path.join(controller_dict['cwd'], 'scripts'))
     
@@ -105,10 +114,12 @@ def subprocess_func(controller_dict):
 
 def streaming_func(controller_dict):
     """
-    Writes Streamed Output to .txt under 'streams'
-    'if' Inside is Needed to Terminate Subprocess When App is Terminated.
-    It Is Not an Expensive Method - Duration Increases by 2.1 % 
-    (Tested With 1000 Iterations/Rows).
+    Writes streamed output to .txt under 'streams'
+    'if' inside is needed to terminate subprocess when app is terminated.
+    it is not an expensive method - duration increases by 2.1 % 
+    (Tested with 1000 Iterations/Rows).
+    'streaming_stopped' is used to stop processing function 
+    when app is stopped or closed.
     """
     
     with open(controller_dict['stream_f_path'], 'wb') as f:
@@ -123,7 +134,4 @@ def streaming_func(controller_dict):
     sub_p.kill()
     sub_p.terminate()
     controller_dict['log_text'] += 'Streaming Terminated'
-    
-    sleep(2)
-    controller_dict['app_initialized'] = False
-    controller_dict['app_running'] = False
+    controller_dict['streaming_stopped'] = True
