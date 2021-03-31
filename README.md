@@ -66,7 +66,7 @@ Principles of how the code works: <br>
 If we want to stream HTTP responses, two processes are started - streaming and processing.<br>
 Streaming starts child subprocess which executes .sh scripts, while parent process writes to file standard output of child subprocess.<br>
 Processing reads the same file with standard output, converts each json string to python dict and checks for unique entries using pandas tricks.<br>
-Reading and processing is done in batches of new data instead of single entries because then the old data can be discarded from RAM. <br>
+Reading and processing is done in batches of new data instead of single entries because then the old data can be discarded from memory. <br>
 With artificial HTTP responses this method works fine, however with realistic data there might be issues of duplicate counts if user experienced error
 on the same hour twice but those two HTTP responses went to different batches of same hour.<br>
 This can be solved by saving IP's for each hour of a single day and checking batch entries against IP's for duplicates. Also, batches would be chopped into hours. <br>
