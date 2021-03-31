@@ -72,7 +72,7 @@ on the same hour twice but those two HTTP responses went to different batches of
 This can be solved by saving IP's for each hour of a single day and checking batch entries against IP's for duplicates. Also, batches would be chopped into hours. <br>
 There is a lot more of space for scalability - we can have functionality which saves user IPs, accurate time. <br><br>
 When we wish to process small amount of HTTP responses, we can use the non-stream/static mode where only processing process is started. The child subprocess, launched
-in streaming mode will now be launched as processing's child subprocess. The processing will start only after child subprocess finished.
+in streaming mode will now be launched as processing's child subprocess. The processing will start only after child subprocess finished.<br><br>
 After processes are started, gui based monitor in launched. It has a loop which is used to update results and log every second. This loop is started and stopped by user.<br><br>
 Inside the .py files you will find more information!
 
