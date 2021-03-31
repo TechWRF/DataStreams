@@ -1,4 +1,3 @@
-#todo: enable windows subsystem for linux download ubuntu 
 import os
 import json
 import pandas as pd
@@ -116,7 +115,7 @@ class DataStreams(object):
                 self.log('Script "%s" Already Executed Before, Skipping to Processing' %self.controller_dict['script_name'])
                 entry_dict = self.read_output()
                 self.process_data(entry_dict)
-                self.log_result()
+                self.log_result(start_time)
                 return
             except:
                 self.log('Could Not Read Saved JSON Data, Running Script')
