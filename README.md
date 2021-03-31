@@ -38,7 +38,7 @@ Run DataStreams using:
 *python run.py*
 
 A window will pop-up, press 'START' to run first test. Soon enough, you will see the result for first 1000 iterations of Script 1 provided in task (Using 'script_test.sh').<br> 
-Press 'START' and 'X' button to close (Do it all the time when work is finished! Don't do 'START', 'STOP', 'START', etc).<br>
+Press 'STOP' and 'X' button to close (Do it all the time when work is finished! Don't do 'START', 'STOP', 'START', etc).<br>
 Now run it again, press 'START' and the process should be faster because HTTP responses, generated in first test, will be used in processing right away. <br>
 This was static mode. Let's try streaming mode now. Run DataStreams with 
 
