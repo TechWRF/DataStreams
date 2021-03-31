@@ -89,11 +89,11 @@ sleep_time = 5 <br>
 
 stream is boolean (0/1) <br>
 sleep_time is how long (in seconds) processing function waits before grabbing new batch.  <br>
-Duration but it will stay in 1 - 30 to avoid empty batches (repetition) and huge batches (Out of Memory)  <br>
+Duration but it will stay in 1 - 30 seconds to avoid empty batches or repetition and huge batches (Out of Memory)  <br>
 Run it with<br> 
 *python run.py --mode=let_it_roll*
 
-If you wish to use some realistic HTTP response data, create 'real_data_stream.txt' in 'scripts' directory with entries in json in such simple format:
+If you wish to use some realistic HTTP response data, create 'real_data_stream.txt' in 'streams' directory with entries in json in such simple format:
 
 {"time":"2019-05-06 17:24:53","ip":"10.0.186.98","status_code":202} <br>
 {"time":"2019-05-06 17:24:54","ip":"10.0.121.67","status_code":301} <br>
