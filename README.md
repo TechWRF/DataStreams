@@ -82,39 +82,39 @@ Now the most important part - how to have fun with it:<br>
 DataStreams is controlled using configurations. Inside config.ini you can see that the argument '--mode' we passed to run.py is actually the keys inside configuration, only in lower case.
 You can write a new HTTP response .sh script and stream it by adding new key to config.ini. Example:
 
-[LET_IT_ROLL]
-script_name = my_script
-stream = 1
-sleep_time = 5
+[LET_IT_ROLL] <br>
+script_name = my_script <br>
+stream = 1 <br>
+sleep_time = 5 <br>
 
-stream is boolean (0/1)
-sleep_time is how long (in seconds) processing function waits before grabbing new batch. 
-Duration but it will stay in 1 - 30 to avoid empty batches (repetition) and huge batches (Out of Memeory)
+stream is boolean (0/1) <br>
+sleep_time is how long (in seconds) processing function waits before grabbing new batch.  <br>
+Duration but it will stay in 1 - 30 to avoid empty batches (repetition) and huge batches (Out of Memory)  <br>
 Run it with<br> 
 *python run.py --mode=let_it_roll*
 
 If you wish to use some realistic HTTP response data, create 'real_data_stream.txt' in 'scripts' directory with entries in json in such simple format:
 
-{"time":"2019-05-06 17:24:53","ip":"10.0.186.98","status_code":202}
-{"time":"2019-05-06 17:24:54","ip":"10.0.121.67","status_code":301}
-{"time":"2019-05-06 17:25:54","ip":"10.0.121.67","status_code":500}
-{"time":"2019-05-06 17:26:55","ip":"10.0.121.67","status_code":500}
-{"time":"2019-05-07 16:59:55","ip":"10.0.121.67","status_code":502}
-{"time":"2019-05-07 17:00:56","ip":"10.0.247.5","status_code":503}
-{"time":"2019-05-11 10:24:57","ip":"10.0.182.224","status_code":502}
-{"time":"2019-05-11 10:24:58","ip":"10.0.117.193","status_code":401}
-{"time":"2019-05-12 10:24:59","ip":"10.0.52.162","status_code":500}
-{"time":"2020-01-01 17:24:53","ip":"10.0.186.98","status_code":502}
-{"time":"2020-01-01 17:24:54","ip":"10.0.121.67","status_code":301}
-{"time":"2020-01-01 17:25:54","ip":"10.0.121.67","status_code":500}
+{"time":"2019-05-06 17:24:53","ip":"10.0.186.98","status_code":202} <br>
+{"time":"2019-05-06 17:24:54","ip":"10.0.121.67","status_code":301} <br>
+{"time":"2019-05-06 17:25:54","ip":"10.0.121.67","status_code":500} <br>
+{"time":"2019-05-06 17:26:55","ip":"10.0.121.67","status_code":500} <br>
+{"time":"2019-05-07 16:59:55","ip":"10.0.121.67","status_code":502} <br>
+{"time":"2019-05-07 17:00:56","ip":"10.0.247.5","status_code":503} <br>
+{"time":"2019-05-11 10:24:57","ip":"10.0.182.224","status_code":502} <br>
+{"time":"2019-05-11 10:24:58","ip":"10.0.117.193","status_code":401} <br>
+{"time":"2019-05-12 10:24:59","ip":"10.0.52.162","status_code":500} <br>
+{"time":"2020-01-01 17:24:53","ip":"10.0.186.98","status_code":502} <br>
+{"time":"2020-01-01 17:24:54","ip":"10.0.121.67","status_code":301} <br>
+{"time":"2020-01-01 17:25:54","ip":"10.0.121.67","status_code":500} <br>
 
 Also, create some .sh script in 'scripts' directory. It won't be executed, so it can be an empty file with .sh extension or copy of other script.<br>
 Then create new configuration:
 
-[REAL_DATA]
-script_name = fake_script
-stream = 0
-sleep_time = 0
+[REAL_DATA] <br>
+script_name = fake_script <br>
+stream = 0 <br>
+sleep_time = 0 <br>
 
 Run it with<br>
 *python run.py --mode=real_data*
